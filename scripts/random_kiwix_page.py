@@ -16,7 +16,6 @@ from urllib.request import Request, urlopen
 DEFAULT_BASE_URL = "http://127.0.0.1:8080/"
 USER_AGENT = "kiwix-random-page-script/3.0"
 
-
 class TextExtractor(HTMLParser):
     """Convert HTML to readable plain text without dependencies."""
 
@@ -42,7 +41,7 @@ class TextExtractor(HTMLParser):
         self.parts: list[str] = []
         self.skip_depth = 0
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+    def handle_starttag(self, tag: str, _attrs: list[tuple[str, str | None]]) -> None:
         if tag in self.SKIP_TAGS:
             self.skip_depth += 1
             return
@@ -80,7 +79,6 @@ class TextExtractor(HTMLParser):
         if self.parts and not self.parts[-1].endswith("\n"):
             self.parts.append("\n")
 
-
 def normalize_base_url(base_url: str) -> str:
     url = base_url.strip()
     if not url.startswith(("http://", "https://")):
@@ -88,7 +86,6 @@ def normalize_base_url(base_url: str) -> str:
     if not url.endswith("/"):
         url += "/"
     return url
-
 
 def fetch_text(url: str, timeout: float) -> tuple[str, str]:
     request = Request(url, headers={"User-Agent": USER_AGENT})
@@ -107,7 +104,6 @@ def fetch_text(url: str, timeout: float) -> tuple[str, str]:
         if not body:
             body = raw.decode("utf-8", errors="replace")
         return response.geturl(), body
-
 
 def discover_content_name(base_url: str, timeout: float) -> str:
     pattern = r'href=["\']/?content/([^/"\'?#]+)'
@@ -138,7 +134,6 @@ def discover_content_name(base_url: str, timeout: float) -> str:
     wikipedia_names = [name for name in unique_names if "wikipedia" in name.lower()]
     return wikipedia_names[0] if wikipedia_names else unique_names[0]
 
-
 def extract_title(page_html: str) -> str:
     match = re.search(r"<title[^>]*>(.*?)</title>", page_html, flags=re.IGNORECASE | re.DOTALL)
     if not match:
@@ -148,13 +143,11 @@ def extract_title(page_html: str) -> str:
     title = re.sub(r"\s*-\s*Wikipedia\s*$", "", title, flags=re.IGNORECASE)
     return title or "Unknown title"
 
-
 def html_to_text(page_html: str) -> str:
     parser = TextExtractor()
     parser.feed(page_html)
     parser.close()
     return parser.text()
-
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -165,7 +158,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--output", default=None, help="Optional output text file path")
     parser.add_argument("--timeout", type=float, default=15.0, help="Request timeout in seconds (default: 15)")
     return parser.parse_args(argv)
-
 
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
@@ -195,7 +187,6 @@ def main(argv: list[str]) -> int:
 
     print(output_text)
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
